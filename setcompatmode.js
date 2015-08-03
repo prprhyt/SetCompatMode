@@ -1,4 +1,4 @@
-/*setcompatmode.js*/
+/*setcompatmode.js ver0.0.2*/
 var patharray = new Array(2);
 var filecount_num = new Array(2);
 for(var i=0;i<2;i++){
@@ -17,10 +17,8 @@ var folder = objApl.BrowseForFolder(0, title, option, root);
 if (folder == null) {
     WScript.Echo("You must select the folder");
     WScript.Quit();//quit
-}else{
-
-  WScript.echo(folder.Self.Path);
 }
+
 var ScriptFolderPath = String(WScript.ScriptFullName).replace(WScript.ScriptName,"");
 
 var WshShell = WScript.CreateObject("WScript.Shell");
@@ -46,18 +44,18 @@ objFolderItems = null;
 objFolder = null;
 objApl = null;
 
-WScript.echo(filecount_num[0]);
 var value = "~ WINXPSP3";
 if(wmi_addComatinfo(patharray[0],value,filecount_num[0])!=0){
   WScript.echo("error");
 }
-WScript.echo(filecount_num[1]);
+
 value = "~ MSIAUTO";
 if(wmi_addComatinfo(patharray[1],value,filecount_num[1])!=0){
   WScript.echo("error");
 }else{
-  WScript.echo("End");
+  WScript.echo("End:"+folder.Self.Path+"\n"+filecount_num[0]+filecount_num[1]+" files complete.");
 }
+
 //WshShell.RegWrite(writevalue+"\\Hidden", Origin_FolderOptReg[0], "REG_DWORD");
 //WshShell.RegWrite(writevalue+"\\HideFileExt", Origin_FolderOptReg[1], "REG_DWORD");
 
@@ -72,7 +70,6 @@ function wmi_addComatinfo(add_name ,add_value, f_num){//Nameに\\を含む場合
       try {
         result = objRegistry.SetStringValue(0x80000001 /*HKCU*/, AppCompatFlagsRegistryKey, name, Data);
       } catch (e) {
-        WScript.echo(e.message);
         result++;
      }
     }
@@ -88,7 +85,6 @@ function GetFilePathFromExtensionName(tmpFolderItems , exn0,exn1) {
         objItem = tmpFolderItems.Item(i);
         if (objItem.IsFolder==true) {
 
-            WScript.echo(objItem.Name);
            objFolderItemsB = objItem.GetFolder;
            GetFilePathFromExtensionName(objFolderItemsB.Items(),exn0,exn1);
         } else {
@@ -98,7 +94,6 @@ function GetFilePathFromExtensionName(tmpFolderItems , exn0,exn1) {
             filecount_num[0]++;
            }else if(fso.GetExtensionName(objItem.Name)==exn1||fso.GetExtensionName(objItem.Name)==exn1.toUpperCase()){
             patharray[1][filecount_num[1]]=objItem.Path;
-            WScript.echo(patharray[1][filecount_num[1]]);
             filecount_num[1]++;
            }
         }
