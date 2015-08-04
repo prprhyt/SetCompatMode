@@ -1,4 +1,12 @@
 /*setcompatmode.js ver0.0.3*/
+/*
+setcompatmode.js
+
+Copyright (c) 2015 prprhyt
+
+This software is released under the MIT License.
+http://opensource.org/licenses/mit-license.php
+*/
 
 var patharray = new Array(2);
 for(var i=0;i<2;i++){
