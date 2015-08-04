@@ -1,9 +1,8 @@
-/*setcompatmode.js ver0.0.2*/
+/*setcompatmode.js ver0.0.3*/
+
 var patharray = new Array(2);
-var filecount_num = new Array(2);
 for(var i=0;i<2;i++){
   patharray[i]= new Array();
-  filecount_num[i]=0;
 }
 var fso = new ActiveXObject("Scripting.FileSystemObject");
 
@@ -17,8 +16,10 @@ var folder = objApl.BrowseForFolder(0, title, option, root);
 if (folder == null) {
     WScript.Echo("You must select the folder");
     WScript.Quit();//quit
-}
+}else{
 
+  WScript.echo(folder.Self.Path);
+}
 var ScriptFolderPath = String(WScript.ScriptFullName).replace(WScript.ScriptName,"");
 
 var WshShell = WScript.CreateObject("WScript.Shell");
@@ -38,45 +39,54 @@ var objFolder = objApl.NameSpace(folder.Self.Path);
 
 var objFolderItems = objFolder.Items();
 
-GetFilePathFromExtensionName(objFolderItems,"exe","msi");
+var exn_array =["exe","msi"];//検索対象の拡張子
+var value_array=["~ WINXPSP3","~ MSIAUTO"];//互換モードの要素
 
-objFolderItems = null;
-objFolder = null;
-objApl = null;
-
-var value = "~ WINXPSP3";
-if(wmi_addComatinfo(patharray[0],value,filecount_num[0])!=0){
-  WScript.echo("error");
+if(exn_array.length!=value_array.length){
+    WScript.Echo("Different number of ExtensionName array and Value array");
+    WScript.Quit();//quit
 }
 
-value = "~ MSIAUTO";
-if(wmi_addComatinfo(patharray[1],value,filecount_num[1])!=0){
-  WScript.echo("error");
-}else{
-  WScript.echo("End:"+folder.Self.Path+"\n"+filecount_num[0]+filecount_num[1]+" files complete.");
+GetFilePathFromExtensionName(objFolderItems,exn_array);
+var files_sum=0;
+for(var i=0;i<exn_array.length;i++){
+  files_sum += patharray[i].length;
+}
+
+if(wmi_addComatinfo(patharray,value_array)!=0){
+   WScript.echo("error");
+ }else{
+   WScript.echo("End:"+folder.Self.Path+"\n"+files_sum+"files complete.");
 }
 
 //WshShell.RegWrite(writevalue+"\\Hidden", Origin_FolderOptReg[0], "REG_DWORD");
 //WshShell.RegWrite(writevalue+"\\HideFileExt", Origin_FolderOptReg[1], "REG_DWORD");
 
-function wmi_addComatinfo(add_name ,add_value, f_num){//Nameに\\を含む場合、RegWriteが有効でないためWMIを利用する
+objFolderItems = null;
+objFolder = null;
+objApl = null;
+
+function wmi_addComatinfo(add_name ,add_value){//Nameに\\を含む場合、RegWriteが有効でないためWMIを利用する
   var AppCompatFlagsRegistryKey = "Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers";
   var name;
-  var Data = add_value;
+  var Data;
   var result=0;
   var objRegistry = GetObject("winmgmts://./root/default:StdRegProv");
-    for(var i=0;i<f_num;i++){
-        name=add_name[i];
-      try {
-        result = objRegistry.SetStringValue(0x80000001 /*HKCU*/, AppCompatFlagsRegistryKey, name, Data);
-      } catch (e) {
-        result++;
-     }
+    for(var i=0;i<add_value.length;i++){
+      Data = add_value[i];
+      for(var j=0;j<add_name[i].length;j++){
+        name=add_name[i][j];
+        try {
+          result = objRegistry.SetStringValue(0x80000001 /*HKCU*/, AppCompatFlagsRegistryKey, name, Data);
+        } catch (e) {
+           result++;
+        }
+      }
     }
   return result;
-  }
+}
 
-function GetFilePathFromExtensionName(tmpFolderItems , exn0,exn1) {
+function GetFilePathFromExtensionName(tmpFolderItems , exn_array_s) {
     var objFolderItemsB;
     var objItem;
 
@@ -84,18 +94,14 @@ function GetFilePathFromExtensionName(tmpFolderItems , exn0,exn1) {
 
         objItem = tmpFolderItems.Item(i);
         if (objItem.IsFolder==true) {
-
            objFolderItemsB = objItem.GetFolder;
-           GetFilePathFromExtensionName(objFolderItemsB.Items(),exn0,exn1);
+           GetFilePathFromExtensionName(objFolderItemsB.Items(),exn_array);
         } else {
-
-           if(fso.GetExtensionName(objItem.Name)==exn0||fso.GetExtensionName(objItem.Name)==exn0.toUpperCase()){
-            patharray[0][filecount_num[0]]=objItem.Path;
-            filecount_num[0]++;
-           }else if(fso.GetExtensionName(objItem.Name)==exn1||fso.GetExtensionName(objItem.Name)==exn1.toUpperCase()){
-            patharray[1][filecount_num[1]]=objItem.Path;
-            filecount_num[1]++;
+         for(var j=0;j<exn_array_s.length;j++){
+           if(fso.GetExtensionName(objItem.Name)==exn_array_s[j].toLowerCase()||fso.GetExtensionName(objItem.Name)==exn_array_s[j].toUpperCase()){
+            patharray[j][patharray[j].length]=objItem.Path;
            }
+         }
         }
 
     }
