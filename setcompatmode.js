@@ -1,4 +1,4 @@
-/*setcompatmode.js ver0.0.3*/
+/*setcompatmode.js ver0.0.4*/
 /*
 setcompatmode.js
 
@@ -103,7 +103,7 @@ function GetFilePathFromExtensionName(tmpFolderItems , exn_array_s) {
         objItem = tmpFolderItems.Item(i);
         if (objItem.IsFolder==true) {
            objFolderItemsB = objItem.GetFolder;
-           GetFilePathFromExtensionName(objFolderItemsB.Items(),exn_array);
+           GetFilePathFromExtensionName(objFolderItemsB.Items(),exn_array_s);
         } else {
          for(var j=0;j<exn_array_s.length;j++){
            if(fso.GetExtensionName(objItem.Name)==exn_array_s[j].toLowerCase()||fso.GetExtensionName(objItem.Name)==exn_array_s[j].toUpperCase()){
