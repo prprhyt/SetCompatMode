@@ -1,4 +1,4 @@
-/*setcompatmode.js ver0.0.4*/
+/*setcompatmode.js ver0.0.5*/
 /*
 setcompatmode.js
 
@@ -24,9 +24,6 @@ var folder = objApl.BrowseForFolder(0, title, option, root);
 if (folder == null) {
     WScript.Echo("You must select the folder");
     WScript.Quit();//quit
-}else{
-
-  WScript.echo(folder.Self.Path);
 }
 var ScriptFolderPath = String(WScript.ScriptFullName).replace(WScript.ScriptName,"");
 
