@@ -1,4 +1,4 @@
-/*setcompatmode.js ver0.0.5*/
+/*setcompatmode.js ver0.0.6*/
 /*
 setcompatmode.js
 
@@ -12,7 +12,6 @@ var patharray = new Array(2);
 for(var i=0;i<2;i++){
   patharray[i]= new Array();
 }
-var fso = new ActiveXObject("Scripting.FileSystemObject");
 
 var objApl = WScript.CreateObject("Shell.Application");
 
@@ -34,9 +33,6 @@ var Origin_FolderOptReg = new Array();
 Origin_FolderOptReg[0]=WshShell.RegRead(writevalue+"\\Hidden");//元の状態を一時保存
 Origin_FolderOptReg[1]=WshShell.RegRead(writevalue+"\\HideFileExt");
 
-//GetExtensionNameを正常に利用するには拡張子等の表示を有効にする必要あり
-WshShell.RegWrite(writevalue+"\\Hidden", 0x01, "REG_DWORD");//隠しファイルとフォルダ表示
-WshShell.RegWrite(writevalue+"\\HideFileExt", 0x00, "REG_DWORD");//拡張子表示
 WshShell.RegWrite("HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers\\","","REG_SZ");//キー未作成であっても対応できるように該当キーを作成
 WshShell.Run( "RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters ",1,true);
 
@@ -63,9 +59,6 @@ if(wmi_addComatinfo(patharray,value_array)!=0){
  }else{
    WScript.echo("End:"+folder.Self.Path+"\n"+files_sum+"files complete.");
 }
-
-//WshShell.RegWrite(writevalue+"\\Hidden", Origin_FolderOptReg[0], "REG_DWORD");
-//WshShell.RegWrite(writevalue+"\\HideFileExt", Origin_FolderOptReg[1], "REG_DWORD");
 
 objFolderItems = null;
 objFolder = null;
@@ -94,6 +87,7 @@ function wmi_addComatinfo(add_name ,add_value){//Nameに\\を含む場合、RegW
 function GetFilePathFromExtensionName(tmpFolderItems , exn_array_s) {
     var objFolderItemsB;
     var objItem;
+    var fso = new ActiveXObject("Scripting.FileSystemObject");
 
     for (var i=0;i<tmpFolderItems.Count;i++){
 
@@ -103,7 +97,8 @@ function GetFilePathFromExtensionName(tmpFolderItems , exn_array_s) {
            GetFilePathFromExtensionName(objFolderItemsB.Items(),exn_array_s);
         } else {
          for(var j=0;j<exn_array_s.length;j++){
-           if(fso.GetExtensionName(objItem.Name)==exn_array_s[j].toLowerCase()||fso.GetExtensionName(objItem.Name)==exn_array_s[j].toUpperCase()){
+           //FileObject.Nameであるとフォルダオプションの設定によってはファイル名に拡張子が含まれないためフォルダオプションの設定に依存しないFileSystemObject.GetFileName(FileObject.Path)を利用する
+           if(fso.GetExtensionName(fso.GetFileName(objItem.Path))==exn_array_s[j].toLowerCase()||fso.GetExtensionName(fso.GetFileName(objItem.Path))==exn_array_s[j].toUpperCase()){
             patharray[j][patharray[j].length]=objItem.Path;
            }
          }
